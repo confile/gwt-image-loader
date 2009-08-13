@@ -46,6 +46,10 @@ public class ImageLoadEvent extends GwtEvent<ImageLoadHandler> {
 		public boolean isImageTaken() {
 			return imageTaken;
 		}
+		
+		public boolean isLoadFailed() {
+			return dimensions == null;
+		}
 
 		@Override
 		protected void dispatch(ImageLoadHandler handler) {
