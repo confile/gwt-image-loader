@@ -34,6 +34,12 @@ public class ImagePreloader {
 	 *   Within this handler you will also be able to get the original dimensions of the loaded image.
 	 */
 	public static void load(String url, ImageLoadHandler loadHandler) {
+		if (url == null) {
+			if (loadHandler != null)
+				loadHandler.imageLoaded(new ImageLoadEvent(url, null));
+			return;
+		}
+		
 		if (dimensionCache.containsKey(url)) {
 			if (loadHandler != null) {
 				Dimensions cachedDimensions = dimensionCache.get(url);
@@ -73,11 +79,11 @@ public class ImagePreloader {
 	private static final LoadHandler onLoad = new LoadHandler() {
 		public void onLoad(LoadEvent event) {
 			Image image = (Image) event.getSource();
-			Dimensions dim = new Dimensions(image.getWidth(), image.getHeight());
-			dimensionCache.put(image.getUrl(), dim);
-			
 			int index = findImageInPool(image);
 			ImageLoader loader = pool.get(index);
+
+			Dimensions dim = new Dimensions(image.getWidth(), image.getHeight());
+			dimensionCache.put(loader.url, dim);
 			
 			ImageLoadEvent evt = new ImageLoadEvent(image, dim);
 			loader.fireHandlers(evt);
@@ -95,11 +101,10 @@ public class ImagePreloader {
 	private static final ErrorHandler onError = new ErrorHandler() {
 		public void onError(ErrorEvent event) {
 			Image image = (Image) event.getSource();
-			System.out.print(image.getUrl());
-			dimensionCache.put(image.getUrl(), new Dimensions(-1,-1));
-			
 			int index = findImageInPool(image);
 			ImageLoader loader = pool.get(index);
+			
+			dimensionCache.put(loader.url, new Dimensions(-1,-1));
 			
 			ImageLoadEvent evt = new ImageLoadEvent(image, null);
 			loader.fireHandlers(evt);
@@ -154,6 +159,7 @@ public class ImagePreloader {
 		Image image = new Image();
 		HandlerRegistration loadHR, errorHR;
 		List<ImageLoadHandler> handlers;
+		String url;
 		
 		public ImageLoader() {
 			loadHR = image.addLoadHandler(onLoad);
@@ -184,6 +190,7 @@ public class ImagePreloader {
 		}
 		
 		public void start(String url) {
+			this.url = url;
 			image.setUrl(url);
 		}
 		
@@ -198,7 +205,7 @@ public class ImagePreloader {
 		}
 		
 		public boolean urlEquals(String url) {
-			return this.image.getUrl().equals(url);
+			return this.url.equals(url);
 		}
 	}
 	

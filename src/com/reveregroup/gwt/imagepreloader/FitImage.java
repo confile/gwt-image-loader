@@ -9,174 +9,157 @@ import com.reveregroup.gwt.imagepreloader.ImagePreloader;
  * Sub-class of Image that allows maxWidth and maxHeight to be specified. When
  * the image loads it automatically resizes itself to maintain the correct
  * aspect ratio and fit within the maximum dimensions.
- *  
+ * 
  * @author David Wolverton
  */
-public class FitImage extends Image
-{
-    private Integer maxWidth, maxHeight, fixedWidth, fixedHeight;
+public class FitImage extends Image {
+	private Integer maxWidth, maxHeight, fixedWidth, fixedHeight;
 
-    private Double aspectRatio;
+	private Double aspectRatio;
 
-    private void resize()
-    {
-	if (fixedWidth != null)
-	{
-	    setWidth(fixedWidth);
-	    if (fixedHeight != null)
-	    {
-		setHeight(fixedHeight);
-	    }
-	    else if (aspectRatio != null)
-	    {
-		setHeight((int)Math.round(fixedWidth * aspectRatio));
-	    } else
-	    {
-		setHeight(fixedWidth);
-	    }
-	} else if (fixedHeight != null) {
-	    setHeight(fixedHeight);
-	    if (aspectRatio != null)
-	    {
-		setWidth((int)Math.round(fixedHeight / aspectRatio));
-	    } else
-	    {
-		setWidth(fixedHeight);
-	    }
-	} else if (maxWidth != null) {
-	    if (maxHeight != null) {
-		if (aspectRatio != null) {
-		    double maxAR = ((double)maxHeight) / ((double)maxWidth);
-		    if (aspectRatio > maxAR) {
+	private void resize() {
+		if (fixedWidth != null) {
+			setWidth(fixedWidth);
+			if (fixedHeight != null) {
+				setHeight(fixedHeight);
+			} else if (aspectRatio != null) {
+				setHeight((int) Math.round(fixedWidth * aspectRatio));
+			} else {
+				setHeight(fixedWidth);
+			}
+		} else if (fixedHeight != null) {
+			setHeight(fixedHeight);
+			if (aspectRatio != null) {
+				setWidth((int) Math.round(fixedHeight / aspectRatio));
+			} else {
+				setWidth(fixedHeight);
+			}
+		} else if (maxWidth != null) {
+			if (maxHeight != null) {
+				if (aspectRatio != null) {
+					double maxAR = ((double) maxHeight) / ((double) maxWidth);
+					if (aspectRatio > maxAR) {
+						setHeight(maxHeight);
+						setWidth((int) Math.round(maxHeight / aspectRatio));
+					} else {
+						setWidth(maxWidth);
+						setHeight((int) Math.round(maxWidth * aspectRatio));
+					}
+				} else {
+					setWidth(maxWidth);
+					setHeight(maxHeight);
+				}
+			} else {
+				setWidth(maxWidth);
+				if (aspectRatio != null)
+					setHeight((int) Math.round(maxWidth * aspectRatio));
+				else
+					setHeight(maxWidth);
+			}
+		} else if (maxHeight != null) {
 			setHeight(maxHeight);
-			setWidth((int)Math.round(maxHeight / aspectRatio));
-		    } else {
-			setWidth(maxWidth);
-			setHeight((int)Math.round(maxWidth * aspectRatio));
-		    }
+			if (aspectRatio != null)
+				setWidth((int) Math.round(maxHeight / aspectRatio));
+			else
+				setWidth(maxHeight);
 		} else {
-		    setWidth(maxWidth);
-		    setHeight(maxHeight);
+			setWidth((Integer) null);
+			setHeight((Integer) null);
 		}
-	    } else {
-		setWidth(maxWidth);
-		if (aspectRatio != null)
-		    setHeight((int)Math.round(maxWidth * aspectRatio));
-		else
-		    setHeight(maxWidth);
-	    }
-	} else if (maxHeight != null) {
-	    setHeight(maxHeight);
-	    if (aspectRatio != null)
-		setWidth((int)Math.round(maxHeight / aspectRatio));
-	    else
-		setWidth(maxHeight);
-	} else {
-	    setWidth((Integer)null);
-	    setHeight((Integer)null);
 	}
-    }
 
-    public FitImage(String url)
-    {
-	super();
-	setUrl(url);
-    }
-    
-    public FitImage(String url, int maxWidth, int maxHeight)
-    {
-	super();
-	this.maxWidth = maxWidth;
-	this.maxHeight = maxHeight;
-	setUrl(url);
-	resize();
-    }
+	public FitImage(String url) {
+		super();
+		setUrl(url);
+	}
 
-    @Override
-    public void setUrl(String url)
-    {
-	super.setUrl(url);
-	ImagePreloader.load(url, new ImageLoadHandler()
-	{
-	    public void imageLoaded(ImageLoadEvent event)
-	    {
-		aspectRatio = ((double)event.getDimensions().getHeight()) / ((double)event.getDimensions().getWidth());
+	public FitImage(String url, int maxWidth, int maxHeight) {
+		super();
+		this.maxWidth = maxWidth;
+		this.maxHeight = maxHeight;
+		setUrl(url);
 		resize();
-	    }
-	});
-    }
+	}
 
-    public Integer getMaxWidth()
-    {
-	return maxWidth;
-    }
+	@Override
+	public void setUrl(String url) {
+		super.setUrl(url);
+		ImagePreloader.load(url, new ImageLoadHandler() {
+			public void imageLoaded(ImageLoadEvent event) {
+				if (!event.isLoadFailed()) {
+					aspectRatio = ((double) event.getDimensions().getHeight())
+							/ ((double) event.getDimensions().getWidth());
+				}
+				resize();
+			}
+		});
+	}
 
-    /**
-     * The width of the image will never exceed this number of pixels.
-     */
-    public void setMaxWidth(Integer maxWidth)
-    {
-	this.maxWidth = maxWidth;
-	resize();
-    }
+	public Integer getMaxWidth() {
+		return maxWidth;
+	}
 
-    public Integer getMaxHeight()
-    {
-	return maxHeight;
-    }
+	/**
+	 * The width of the image will never exceed this number of pixels.
+	 */
+	public void setMaxWidth(Integer maxWidth) {
+		this.maxWidth = maxWidth;
+		resize();
+	}
 
-    /**
-     * The height of the image will never exceed this number of pixels.
-     */
-    public void setMaxHeight(Integer maxHeight)
-    {
-	this.maxHeight = maxHeight;
-	resize();
-    }
+	public Integer getMaxHeight() {
+		return maxHeight;
+	}
 
-    public Integer getFixedWidth()
-    {
-	return fixedWidth;
-    }
+	/**
+	 * The height of the image will never exceed this number of pixels.
+	 */
+	public void setMaxHeight(Integer maxHeight) {
+		this.maxHeight = maxHeight;
+		resize();
+	}
 
-    /**
-     * The exact width (in pixels) for the image. This overrides the max dimension
-     * behavior, but preserves aspect ratio if fixedHeight is not also specified.
-     */
-    public void setFixedWidth(Integer fixedWidth)
-    {
-	this.fixedWidth = fixedWidth;
-	resize();
-    }
+	public Integer getFixedWidth() {
+		return fixedWidth;
+	}
 
-    public Integer getFixedHeight()
-    {
-	return fixedHeight;
-    }
+	/**
+	 * The exact width (in pixels) for the image. This overrides the max
+	 * dimension behavior, but preserves aspect ratio if fixedHeight is not also
+	 * specified.
+	 */
+	public void setFixedWidth(Integer fixedWidth) {
+		this.fixedWidth = fixedWidth;
+		resize();
+	}
 
-    /**
-     * The exact height (in pixels) for the image. This overrides the max dimension
-     * behavior, but preserves aspect ratio if fixedWidth is not also specified.
-     */
-    public void setFixedHeight(Integer fixedHeight)
-    {
-	this.fixedHeight = fixedHeight;
-	resize();
-    }
+	public Integer getFixedHeight() {
+		return fixedHeight;
+	}
 
-    private void setHeight(Integer px)
-    {
-	if (px == null)
-	    setHeight(""); //getElement().removeAttribute("height");
-	else
-	    setHeight(px + "px"); //getElement().setAttribute("height", px + "px");
-    }
+	/**
+	 * The exact height (in pixels) for the image. This overrides the max
+	 * dimension behavior, but preserves aspect ratio if fixedWidth is not also
+	 * specified.
+	 */
+	public void setFixedHeight(Integer fixedHeight) {
+		this.fixedHeight = fixedHeight;
+		resize();
+	}
 
-    private void setWidth(Integer px)
-    {
-	if (px == null)
-	    setWidth(""); //getElement().removeAttribute("width");
-	else
-	    setWidth(px + "px"); //getElement().setAttribute("width", px + "px");
-    }
+	private void setHeight(Integer px) {
+		if (px == null)
+			setHeight(""); // getElement().removeAttribute("height");
+		else
+			setHeight(px + "px"); // getElement().setAttribute("height", px +
+		// "px");
+	}
+
+	private void setWidth(Integer px) {
+		if (px == null)
+			setWidth(""); // getElement().removeAttribute("width");
+		else
+			setWidth(px + "px"); // getElement().setAttribute("width", px +
+		// "px");
+	}
 }
