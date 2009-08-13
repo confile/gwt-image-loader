@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gwt.event.dom.client.ErrorEvent;
+import com.google.gwt.event.dom.client.ErrorHandler;
 import com.google.gwt.event.dom.client.LoadEvent;
 import com.google.gwt.event.dom.client.LoadHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -25,13 +27,23 @@ public class ImagePreloader {
 		return dimensionCache.get(url);
 	}
 	
+	/**
+	 * Call this method to preload an image.
+	 * @param url - the image to pre-load
+	 * @param loadHandler - (optional) specify an ImageLoadHandler to be fired when the image is fully loaded.
+	 *   Within this handler you will also be able to get the original dimensions of the loaded image.
+	 */
 	public static void load(String url, ImageLoadHandler loadHandler) {
 		if (dimensionCache.containsKey(url)) {
 			if (loadHandler != null) {
 				Dimensions cachedDimensions = dimensionCache.get(url);
 				if (cachedDimensions != null) {
-					ImageLoadEvent event = new ImageLoadEvent(url, cachedDimensions);
-					loadHandler.imageLoaded(event);
+					if (cachedDimensions.getWidth() == -1)
+						//image load failed
+						loadHandler.imageLoaded(new ImageLoadEvent(url, null));
+					else
+						//image load succeeded
+						loadHandler.imageLoaded(new ImageLoadEvent(url, cachedDimensions));
 				} else {
 					int index = findUrlInPool(url);
 					pool.get(index).addHander(loadHandler);
@@ -68,6 +80,28 @@ public class ImagePreloader {
 			ImageLoader loader = pool.get(index);
 			
 			ImageLoadEvent evt = new ImageLoadEvent(image, dim);
+			loader.fireHandlers(evt);
+			
+			activeLoaderCount--;
+			
+			pool.set(index, pool.get(activeLoaderCount));
+			
+			if (evt.isImageTaken()) {
+				pool.remove(activeLoaderCount);
+			}
+		}
+	};
+	
+	private static final ErrorHandler onError = new ErrorHandler() {
+		public void onError(ErrorEvent event) {
+			Image image = (Image) event.getSource();
+			System.out.print(image.getUrl());
+			dimensionCache.put(image.getUrl(), new Dimensions(-1,-1));
+			
+			int index = findImageInPool(image);
+			ImageLoader loader = pool.get(index);
+			
+			ImageLoadEvent evt = new ImageLoadEvent(image, null);
 			loader.fireHandlers(evt);
 			
 			activeLoaderCount--;
@@ -118,11 +152,12 @@ public class ImagePreloader {
 	
 	private static class ImageLoader {
 		Image image = new Image();
-		HandlerRegistration hr;
+		HandlerRegistration loadHR, errorHR;
 		List<ImageLoadHandler> handlers;
 		
 		public ImageLoader() {
-			hr = image.addLoadHandler(onLoad);
+			loadHR = image.addLoadHandler(onLoad);
+			errorHR = image.addErrorHandler(onError);
 			loadingArea.add(image);
 		}
 		
@@ -153,7 +188,8 @@ public class ImagePreloader {
 		}
 		
 		public void retire() {
-			hr.removeHandler();
+			loadHR.removeHandler();
+			errorHR.removeHandler();
 			loadingArea.remove(image);
 		}
 		
