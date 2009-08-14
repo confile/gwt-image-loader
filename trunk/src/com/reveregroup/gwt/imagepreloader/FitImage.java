@@ -1,5 +1,6 @@
 package com.reveregroup.gwt.imagepreloader;
 
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Image;
 import com.reveregroup.gwt.imagepreloader.ImageLoadEvent;
 import com.reveregroup.gwt.imagepreloader.ImageLoadHandler;
@@ -16,6 +17,8 @@ public class FitImage extends Image {
 	private Integer maxWidth, maxHeight, fixedWidth, fixedHeight;
 
 	private Double aspectRatio;
+
+	private Dimensions dimensions;
 
 	private void resize() {
 		if (fixedWidth != null) {
@@ -68,15 +71,38 @@ public class FitImage extends Image {
 		}
 	}
 
+	public FitImage() {
+	}
+
 	public FitImage(String url) {
 		super();
 		setUrl(url);
 	}
 
+	public FitImage(FitImageLoadHandler loadHandler) {
+		super();
+		addFitImageLoadHandler(loadHandler);
+	}
+
+	public FitImage(String url, FitImageLoadHandler loadHandler) {
+		super();
+		addFitImageLoadHandler(loadHandler);
+		setUrl(url);
+	}
+	
 	public FitImage(String url, int maxWidth, int maxHeight) {
 		super();
 		this.maxWidth = maxWidth;
 		this.maxHeight = maxHeight;
+		setUrl(url);
+		resize();
+	}
+	
+	public FitImage(String url, int maxWidth, int maxHeight, FitImageLoadHandler loadHandler) {
+		super();
+		this.maxWidth = maxWidth;
+		this.maxHeight = maxHeight;
+		addFitImageLoadHandler(loadHandler);
 		setUrl(url);
 		resize();
 	}
@@ -87,12 +113,33 @@ public class FitImage extends Image {
 		ImagePreloader.load(url, new ImageLoadHandler() {
 			public void imageLoaded(ImageLoadEvent event) {
 				if (!event.isLoadFailed()) {
-					aspectRatio = ((double) event.getDimensions().getHeight())
-							/ ((double) event.getDimensions().getWidth());
+					dimensions = event.getDimensions();
+					aspectRatio = ((double) dimensions.getHeight()) / ((double) dimensions.getWidth());
 				}
 				resize();
+				fireEvent(new FitImageLoadEvent(event.isLoadFailed()));
 			}
 		});
+	}
+
+	public Integer getOriginalWidth() {
+		return dimensions == null ? null : dimensions.getWidth();
+	}
+
+	public Integer getOriginalHeight() {
+		return dimensions == null ? null : dimensions.getHeight();
+	}
+
+	/**
+	 * <p>Handle FitImageLoadEvents. These events are fired whenever the image finishes
+	 * loading completely or fails to load. The event occurs after the image has been
+	 * resized to fit the original image aspect ratio.
+	 * 
+	 * <p>NOTE: Add this handler before setting the URL property of the FitImage. If set
+	 * after, there is no guarantee that the handler will be fired for the event.
+	 */
+	public HandlerRegistration addFitImageLoadHandler(FitImageLoadHandler handler) {
+		return addHandler(handler, FitImageLoadEvent.getType());
 	}
 
 	public Integer getMaxWidth() {
@@ -115,6 +162,12 @@ public class FitImage extends Image {
 	 * The height of the image will never exceed this number of pixels.
 	 */
 	public void setMaxHeight(Integer maxHeight) {
+		this.maxHeight = maxHeight;
+		resize();
+	}
+	
+	public void setMaxSize(Integer maxWidth, Integer maxHeight) {
+		this.maxWidth = maxWidth;
 		this.maxHeight = maxHeight;
 		resize();
 	}
@@ -143,6 +196,12 @@ public class FitImage extends Image {
 	 * specified.
 	 */
 	public void setFixedHeight(Integer fixedHeight) {
+		this.fixedHeight = fixedHeight;
+		resize();
+	}
+	
+	public void setFixedSize(Integer fixedWidth, Integer fixedHeight) {
+		this.fixedWidth = fixedWidth;
 		this.fixedHeight = fixedHeight;
 		resize();
 	}
