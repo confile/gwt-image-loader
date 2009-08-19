@@ -1,12 +1,13 @@
 package com.reveregroup.gwt.imagepreloader;
 
+import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.ui.Image;
 
 public class ImageLoadEvent extends GwtEvent<ImageLoadHandler> {
 		private static final Type<ImageLoadHandler> TYPE = new Type<ImageLoadHandler>();
 
-		public ImageLoadEvent(Image image, Dimensions dimensions) {
+		public ImageLoadEvent(ImageElement image, Dimensions dimensions) {
 			this.image = image;
 			this.dimensions = dimensions;
 		}
@@ -16,7 +17,7 @@ public class ImageLoadEvent extends GwtEvent<ImageLoadHandler> {
 			this.dimensions = dimensions;
 		}
 		
-		protected Image image;
+		protected ImageElement image;
 		protected String url;
 		protected Dimensions dimensions;
 		protected boolean imageTaken;
@@ -30,8 +31,7 @@ public class ImageLoadEvent extends GwtEvent<ImageLoadHandler> {
 			if (image == null) {
 				return new Image(url);
 			} else {
-				ImagePreloader.retireLoader(image);
-				Image ret = image;
+				Image ret = new ImageFromElement(image);
 				image = null;
 				return ret;
 			}
@@ -40,7 +40,7 @@ public class ImageLoadEvent extends GwtEvent<ImageLoadHandler> {
 		public String getImageUrl() {
 			if (url != null)
 				return url;
-			return image.getUrl();
+			return image.getSrc();
 		}
 		
 		public boolean isImageTaken() {
@@ -64,5 +64,11 @@ public class ImageLoadEvent extends GwtEvent<ImageLoadHandler> {
 		public static Type<ImageLoadHandler> getType() {
 			return TYPE;
 		}
-			
+		
+		private static class ImageFromElement extends Image {
+			public ImageFromElement(ImageElement element) {
+				super(element);
+			}
+		}
+		
 	}
