@@ -17,7 +17,7 @@ public class Demo extends FlexTable implements EntryPoint {
 		ImagePreloader.load("TestImage.gif", new OnLoad(0));
 		setWidget(0, 0, new Image("TestImage.gif"));
 		
-		ImagePreloader.load("TestImage.gif", new OnLoad(1) {
+		ImagePreloader.load("TestImage2.gif", new OnLoad(1) {
 			@Override
 			public void imageLoaded(ImageLoadEvent event) {
 				setWidget(row, 0, event.takeImage());
@@ -28,7 +28,7 @@ public class Demo extends FlexTable implements EntryPoint {
 		ImagePreloader.load("TestImage_X.gif", new OnLoad(2));
 		setWidget(2, 0, new Image("TestImage_X.gif"));
 		
-		ImagePreloader.load("TestImage_X.gif", new OnLoad(3) {
+		ImagePreloader.load("TestImage_Y.gif", new OnLoad(3) {
 			@Override
 			public void imageLoaded(ImageLoadEvent event) {
 				setWidget(row, 0, event.takeImage());
@@ -36,7 +36,7 @@ public class Demo extends FlexTable implements EntryPoint {
 			}
 		});
 		
-		FitImage fi = new FitImage("TestImage.gif", new OnLoad(4));
+		FitImage fi = new FitImage("TestImage3.gif", new OnLoad(4));
 		fi.setMaxWidth(100);
 		fi.setMaxHeight(100);
 		setWidget(4, 0, fi);
@@ -44,10 +44,10 @@ public class Demo extends FlexTable implements EntryPoint {
 		fi = new FitImage();
 		fi.addFitImageLoadHandler(new OnLoad(5));
 		fi.setMaxSize(100, 50);
-		fi.setUrl("TestImage.gif");
+		fi.setUrl("TestImage4.gif");
 		setWidget(5, 0 , fi);
 		
-		setWidget(6, 0, new FitImage("TestImage_X.gif", 100, 100, new OnLoad(6)));
+		setWidget(6, 0, new FitImage("TestImage_Z.gif", 100, 100, new OnLoad(6)));
 		
 		
 		
