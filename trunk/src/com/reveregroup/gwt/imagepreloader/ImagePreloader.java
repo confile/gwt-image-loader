@@ -11,7 +11,6 @@ import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.EventListener;
-import com.google.gwt.user.client.Window;
 
 public class ImagePreloader {
 	private static Map<String, Dimensions> dimensionCache = new HashMap<String, Dimensions>();
@@ -35,7 +34,6 @@ public class ImagePreloader {
 	 *            able to get the original dimensions of the loaded image.
 	 */
 	public static void load(String url, ImageLoadHandler loadHandler) {
-		System.out.println("LOAD: " + url);
 		if (url == null) {
 			if (loadHandler != null)
 				loadHandler.imageLoaded(new ImageLoadEvent(url, null));
@@ -45,25 +43,27 @@ public class ImagePreloader {
 		if (dimensionCache.containsKey(url)) {
 			if (loadHandler != null) {
 				Dimensions cachedDimensions = dimensionCache.get(url);
-				if (cachedDimensions != null) {
-					if (cachedDimensions.getWidth() == -1)
-						// image load failed
-						loadHandler.imageLoaded(new ImageLoadEvent(url, null));
-					else
-						// image load succeeded
-						loadHandler.imageLoaded(new ImageLoadEvent(url, cachedDimensions));
-				} else {
-					int index = findUrlInPool(url);
-					activeLoaders.get(index).addHander(loadHandler);
-				}
+				if (cachedDimensions.getWidth() == -1)
+					// image load failed
+					loadHandler.imageLoaded(new ImageLoadEvent(url, null));
+					//FireLaterTimer.fireLater(loadHandler, new ImageLoadEvent(url, null));
+				else
+					// image load succeeded
+					loadHandler.imageLoaded(new ImageLoadEvent(url, cachedDimensions));
+					//FireLaterTimer.fireLater(loadHandler, new ImageLoadEvent(url, cachedDimensions));
 			}
 			return;
+		} else {
+			int index = findUrlInPool(url);
+			if (index != -1) {
+				activeLoaders.get(index).addHander(loadHandler);
+				return;
+			}
 		}
-		dimensionCache.put(url, null); // mark url as currently loading
 
 		init();
 
-		ImageLoader loader = new ImageLoader();;
+		ImageLoader loader = new ImageLoader();
 		activeLoaders.add(loader);
 		loader.addHander(loadHandler);
 		loader.start(url);
@@ -71,7 +71,6 @@ public class ImagePreloader {
 
 	private static void init() {
 		if (loadingArea == null) {
-
 			loadingArea = DOM.createDiv();
 			loadingArea.getStyle().setProperty("visibility", "hidden");
 			loadingArea.getStyle().setProperty("position", "absolute");
@@ -93,8 +92,6 @@ public class ImagePreloader {
 					ImageElement image = ImageElement.as(Element.as(event.getEventTarget()));
 					int index = findImageInPool(image);
 					ImageLoader loader = activeLoaders.get(index);
-					
-					System.out.println(" " + image.getSrc());
 
 					Dimensions dim = null;
 					if (success) {
@@ -106,7 +103,7 @@ public class ImagePreloader {
 
 					loadingArea.removeChild(image);
 					activeLoaders.remove(index);
-					
+
 					ImageLoadEvent evt = new ImageLoadEvent(image, dim);
 					loader.fireHandlers(evt);
 				}
@@ -177,4 +174,23 @@ public class ImagePreloader {
 			return this.url.equals(url);
 		}
 	}
+
+//	private static class FireLaterTimer extends Timer {
+//		ImageLoadHandler handler;
+//		ImageLoadEvent event;
+//		
+//		public FireLaterTimer(ImageLoadHandler handler, ImageLoadEvent event) {
+//			this.handler = handler;
+//			this.event = event;
+//		}
+//		
+//		@Override
+//		public void run() {
+//			handler.imageLoaded(event);
+//		}
+//		
+//		public static void fireLater(ImageLoadHandler handler, ImageLoadEvent event) {
+//			new FireLaterTimer(handler, event).schedule(1);
+//		}
+//	}
 }
