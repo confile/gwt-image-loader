@@ -64,27 +64,6 @@
 					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.2</version>
-				<executions>
-					<execution>
-						<id>clean-lib</id>
-						<phase>test</phase>
-						<configuration>
-							<tasks>
-								<echo>Cleaning target dir</echo>
-								<delete dir="target/META-INF" />
-								<delete file="target/log4j.properties" />
-							</tasks>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
 	</build>
 	<distributionManagement>
