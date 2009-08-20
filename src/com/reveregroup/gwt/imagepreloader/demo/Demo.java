@@ -49,7 +49,42 @@ public class Demo extends FlexTable implements EntryPoint {
 		
 		setWidget(6, 0, new FitImage("TestImage_Z.gif", 100, 100, new OnLoad(6)));
 		
+		// --------------------------------------
 		
+		ImagePreloader.load("TestImage.gif", new OnLoad(7));
+		setWidget(7, 0, new Image("TestImage.gif"));
+		
+		ImagePreloader.load("TestImage.gif", new OnLoad(8) {
+			@Override
+			public void imageLoaded(ImageLoadEvent event) {
+				setWidget(row, 0, event.takeImage());
+				super.imageLoaded(event);
+			}
+		});
+
+		ImagePreloader.load("TestImage_X.gif", new OnLoad(9));
+		setWidget(9, 0, new Image("TestImage_X.gif"));
+		
+		ImagePreloader.load("TestImage_X.gif", new OnLoad(10) {
+			@Override
+			public void imageLoaded(ImageLoadEvent event) {
+				setWidget(row, 0, event.takeImage());
+				super.imageLoaded(event);
+			}
+		});
+		
+		fi = new FitImage("TestImage.gif", new OnLoad(11));
+		fi.setMaxWidth(100);
+		fi.setMaxHeight(100);
+		setWidget(11, 0, fi);
+		
+		fi = new FitImage();
+		fi.addFitImageLoadHandler(new OnLoad(12));
+		fi.setMaxSize(100, 50);
+		fi.setUrl("TestImage.gif");
+		setWidget(12, 0 , fi);
+		
+		setWidget(13, 0, new FitImage("TestImage_X.gif", 100, 100, new OnLoad(13)));
 		
 		RootPanel.get("content").add(this);
 	}
