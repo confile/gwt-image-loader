@@ -89,6 +89,9 @@ public class ImagePreloader {
 						return;
 					}
 
+					if (!ImageElement.is(event.getEventTarget()))
+						return;
+					
 					ImageElement image = ImageElement.as(Element.as(event.getEventTarget()));
 					int index = findImageInPool(image);
 					ImageLoader loader = activeLoaders.get(index);
