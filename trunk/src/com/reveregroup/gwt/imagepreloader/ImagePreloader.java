@@ -81,18 +81,18 @@ public class ImagePreloader {
 			Event.setEventListener(loadingArea, new EventListener() {
 				public void onBrowserEvent(Event event) {
 					boolean success;
-					if ("load".equals(event.getType())) {
+					if (Event.ONLOAD == event.getTypeInt()) {
 						success = true;
-					} else if ("error".equals(event.getType())) {
+					} else if (Event.ONERROR == event.getTypeInt()) {
 						success = false;
 					} else {
 						return;
 					}
-
-					if (!ImageElement.is(event.getEventTarget()))
+					
+					if (!ImageElement.is(event.getCurrentEventTarget()))
 						return;
 					
-					ImageElement image = ImageElement.as(Element.as(event.getEventTarget()));
+					ImageElement image = ImageElement.as(Element.as(event.getCurrentEventTarget()));
 					int index = findImageInPool(image);
 					ImageLoader loader = activeLoaders.get(index);
 
